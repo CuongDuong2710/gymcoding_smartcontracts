@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create First dApp</title>
+  </head>
+  <body>
+    <script>
+        var getFood
+        var setFood
+    </script>
+    <script type="module">
+        import {
+            createWalletClient,
+            custom,
+            getContract
+        } from "https://esm.sh/viem";
+        import { sepolia } from "https://esm.sh/viem/chains"
+
+        const walletClient = createWalletClient({
+            chain: sepolia,
+            transport: custom(window.ethereum)
+        })
+
+        const accounts = await walletClient.requestAddresses();
+        const [address] = accounts;
+
+        const FoodContractAddress = '0xA935B95D56Ab08684696c802Fc314BD6CB174103';
+        const FoodContractABI = [
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_food",
+                    "type": "string"
+                }
+            ],
+            "name": "setFood",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getFood",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }];
+        const FoodContractInstance = getContract({
+            address: FoodContractAddress,
+            abi: FoodContractABI,
+            client: walletClient
+        })
+        getFood = async function() {
+            const food = await FoodContractInstance.read.getFood()
+            document.getElementById("showFood").innerText = `Your food: ${food}`
+        }
+        setFood = async function() {
+            const food = document.getElementById("food").value
+            await FoodContractInstance.write.setFood([food], {
+                account:address
+            })
+        } 
+    </script>
+    <p1>This is my first dApp</p1>
+    <p>Here we can set and get the food name:</p>
+    <label for="food">Input Food:</label> </br>
+    <input type="text" id="food"/>
+
+    <button onclick="getFood()">Get Food</button>
+    <button onclick="setFood()">Set Food</button>
+    <p id="showFood"></p>
+  </body>
+</html>
